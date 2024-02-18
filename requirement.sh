@@ -1,0 +1,1 @@
+wget https://github.com/notofonts/noto-cjk/raw/main/google-fonts/NotoSerifSC%5Bwght%5D.ttf && mkdir -p ~/.local/share/fonts/noto && cp *.ttf ~/.local/share/fonts/noto && fc-cache -f -v && yum install at-spi2-atk -y && yum install libxkbcommon

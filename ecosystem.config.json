@@ -1,0 +1,15 @@
+{
+  "apps": [
+    {
+      "name": "definer",
+      "script": "npm",
+      "args": "start",
+      "instances": 1,
+      "max_memory_restart": "500M",
+      "watch": [
+        "public",
+        "build"
+      ]
+    }
+  ]
+}

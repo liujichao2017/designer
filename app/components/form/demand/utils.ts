@@ -1,0 +1,1 @@
+export const inputClass = "input input-bordered w-full rounded-full active:outline-none focus:outline-none focus:border-primary"

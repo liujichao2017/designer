@@ -1,0 +1,859 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model code {
+  id         Int       @id @default(autoincrement())
+  event      String?   @db.VarChar(255)
+  email      String?   @default("0") @db.VarChar(255)
+  code       String?   @db.VarChar(255)
+  status     Int?      @default(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model coupon {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  code       String    @default("") @db.VarChar(11)
+  type       Int?      @default(3)
+  expire     DateTime? @db.Timestamp(0)
+  status     Int       @default(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model experience {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  company     String    @default("") @db.VarChar(128)
+  country     String?   @db.VarChar(64)
+  city        String?   @db.VarChar(32)
+  title       String    @default("") @db.VarChar(128)
+  start_at    DateTime? @db.Timestamp(0)
+  end_at      DateTime? @db.Timestamp(0)
+  is_working  Boolean?
+  description String?   @db.Text
+  uid         Int
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+  owner       user?     @relation(fields: [uid], references: [id])
+
+  @@index([uid])
+}
+
+model notify {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  type       Int
+  from       Int?
+  to         Int
+  title      String?   @db.VarChar(255)
+  content    String?   @db.VarChar(1024)
+  status     Int?      @default(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  owner      user?     @relation("receiver", fields: [to], references: [id])
+  sender     user?     @relation("sender", fields: [from], references: [id])
+
+  @@index([from])
+  @@index([to])
+}
+
+model permission {
+  id          Int               @id @default(autoincrement()) @db.UnsignedInt
+  name        String?           @default("") @db.VarChar(255)
+  flag        Int
+  extra       Int?
+  target      Int?
+  description String?           @db.Text
+  created_at  DateTime          @default(now()) @db.Timestamp(0)
+  updated_at  DateTime          @default(now()) @db.Timestamp(0)
+  status      Int?
+  url         String?           @db.VarChar(255)
+  roles       role_permission[]
+}
+
+model picture {
+  id                    Int                 @id @default(autoincrement())
+  user_id               Int?
+  project_name          String?             @db.VarChar(255)
+  img_url               String?             @default("") @db.VarChar(255)
+  litpic_url            String              @db.VarChar(255)
+  picture_public_tag_id Int?                @default(0)
+  status                Int?                @default(0)
+  level                 Int?                @default(0)
+  created_at            DateTime?           @default(now()) @db.Timestamp(0)
+  updated_at            DateTime?           @default(now()) @db.Timestamp(0)
+  level_id              Int?
+  hash                  String?
+  owner                 user?               @relation(fields: [user_id], references: [id])
+  tag                   picture_public_tag? @relation(fields: [picture_public_tag_id], references: [id])
+  tags                  tag[]
+  named_tag             level?              @relation(fields: [level_id], references: [id])
+
+  @@index([user_id])
+  @@index([picture_public_tag_id])
+  @@index([level_id])
+  @@index([hash])
+  @@index([level])
+  @@index([img_url])
+}
+
+model picture_public_tag {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  pictures   picture[]
+}
+
+model portfolio {
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
+  uid           Int
+  img_url       String    @db.Text
+  thumbnail_url String?   @db.Text
+  title         String?   @db.VarChar(32)
+  remark        String?   @db.Text
+  score         Int?
+  import_status Int?      @default(0)
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  user          user?     @relation(fields: [uid], references: [id])
+
+  @@index([uid])
+  @@index([score])
+}
+
+model preference {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(255)
+  img_url    String?   @db.LongText
+  user_id    Int?
+  folder_id  Int?      @default(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model prime {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  type      Int       @default(0)
+  expire    DateTime? @db.Date
+  uid       Int       @unique(map: "unique_uid")
+  create_at DateTime? @default(now()) @db.Timestamp(0)
+  update_at DateTime? @default(now()) @db.Timestamp(0)
+  owner     user?     @relation(fields: [uid], references: [id])
+
+  @@index([expire], map: "expire")
+}
+
+model profile {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  title       String?   @db.VarChar(128)
+  gender      Int?
+  phone       String?   @db.VarChar(32)
+  country     String?   @db.VarChar(64)
+  state       String?   @db.VarChar(32)
+  city        String?   @db.VarChar(32)
+  zipcode     Int?
+  taxId       String?   @db.VarChar(32)
+  description String?   @db.Text
+  uid         Int       @unique(map: "uid")
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+  account     String?   @db.VarChar(255)
+  balance     Decimal?  @default(0.00) @db.Decimal(50, 2)
+  bank        String?   @db.VarChar(255)
+  language    Int?
+  owner       user?     @relation(fields: [uid], references: [id])
+}
+
+model project {
+  id           Int            @id @default(autoincrement())
+  project_name String?        @db.VarChar(255)
+  user_id      Int?           @default(0)
+  total_size   BigInt?        @default(0)
+  created_at   DateTime?      @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?      @default(now()) @db.Timestamp(0)
+  books        project_list[]
+  owner        user?          @relation(fields: [user_id], references: [id])
+  demand       demand[]
+
+  @@index([user_id])
+}
+
+model project_list {
+  id           Int                  @id @default(autoincrement())
+  project_name String?              @db.VarChar(255)
+  project_id   Int?                 @default(0)
+  user_id      Int?                 @default(0)
+  pdf_url      String?              @db.VarChar(255)
+  page         Int?
+  created_at   DateTime?            @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?            @default(now()) @db.Timestamp(0)
+  type         Int                  @default(0)
+  pages        project_list_image[]
+  project      project?             @relation(fields: [project_id], references: [id])
+  owner        user?                @relation(fields: [user_id], references: [id])
+  marks        project_mark[]
+
+  @@index([user_id])
+  @@index([project_id])
+}
+
+model empfile_list {
+  id         Int       @id @default(autoincrement())
+  demand_id  Int?      @default(0)
+  file_name  String?   @db.VarChar(255)
+  user_id    Int?      @default(0)
+  file_url   String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  type       String?   @db.VarChar(255)
+  demand     demand?   @relation(fields: [demand_id], references: [id])
+
+  @@index([demand_id])
+}
+
+model project_list_image {
+  id              Int           @id @default(autoincrement())
+  project_list_id Int?
+  page            Int?          @default(0)
+  img_url         String?       @db.VarChar(255)
+  litpic_url      String?       @db.VarChar(255)
+  created_at      DateTime?     @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?     @default(now()) @db.Timestamp(0)
+  book            project_list? @relation(fields: [project_list_id], references: [id])
+
+  @@index([project_list_id])
+}
+
+model project_mark {
+  id              Int           @id @default(autoincrement())
+  project_id      Int?          @default(0)
+  project_list_id Int?          @default(0)
+  user_id         Int?          @default(0)
+  data            String?       @db.LongText
+  drawing         String?       @db.VarChar(255)
+  page            Int?          @default(1)
+  created_at      DateTime?     @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?     @default(now()) @db.Timestamp(0)
+  book            project_list? @relation(fields: [project_list_id], references: [id])
+
+  @@index([project_list_id])
+}
+
+model project_share {
+  id         Int       @id @default(autoincrement())
+  project_id Int?      @default(0)
+  link       String?   @db.VarChar(255)
+  user_id    Int?      @default(0)
+  auth       String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model role {
+  id              Int               @id @default(autoincrement()) @db.UnsignedInt
+  name            String            @default("") @db.VarChar(255)
+  description     String?           @db.LongText
+  created_at      DateTime          @default(now()) @db.Timestamp(0)
+  updated_at      DateTime          @default(now()) @db.Timestamp(0)
+  status          Int               @default(1)
+  users           user_role[]
+  role_permission role_permission[]
+
+  @@index([name], map: "name")
+}
+
+model role_permission {
+  id         Int         @id @default(autoincrement()) @db.UnsignedInt
+  rid        Int
+  pid        Int
+  created_at DateTime    @default(now()) @db.Timestamp(0)
+  updated_at DateTime    @default(now()) @db.Timestamp(0)
+  permission permission? @relation(fields: [pid], references: [id])
+  role       role?       @relation(fields: [rid], references: [id])
+
+  @@index([rid])
+  @@index([pid])
+}
+
+model skill {
+  id          Int          @id @default(autoincrement()) @db.UnsignedInt
+  name        String       @unique(map: "name") @default("") @db.VarChar(32)
+  remark      String?      @db.VarChar(1024)
+  description String?      @db.VarChar(2048)
+  created_at  DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at  DateTime?    @default(now()) @db.Timestamp(0)
+  users       user_skill[]
+}
+
+model team {
+  id         Int         @id @default(autoincrement()) @db.UnsignedInt
+  name       String?     @default("") @db.VarChar(255)
+  status     Int         @default(1)
+  created_at DateTime?   @default(now()) @db.Timestamp(0)
+  updated_at Int?
+  users      user_team[]
+}
+
+model team_invition {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  from       Int
+  to         String    @default("") @db.VarChar(255)
+  permission Int       @default(65533)
+  create_at  DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model trial {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  type      Int       @default(1)
+  uid       Int
+  create_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model user {
+  id                       Int                        @id @default(autoincrement())
+  name                     String                     @default("") @db.VarChar(255)
+  email                    String                     @default("") @db.VarChar(255)
+  password                 String                     @default("") @db.VarChar(255)
+  avatar                   String?                    @db.VarChar(255)
+  status                   Int                        @default(0)
+  score                    Int?                       @default(0)
+  created_at               DateTime?                  @default(now()) @db.Timestamp(0)
+  updated_at               DateTime?                  @default(now()) @db.Timestamp(0)
+  login_at                 DateTime?                  @db.Timestamp(0)
+  profileId                Int?                       @db.UnsignedInt
+  primeId                  Int?                       @db.UnsignedInt
+  auths                    auth[]
+  profile                  profile?
+  pictures                 picture[]
+  privatePictures          user_picture[]
+  projects                 project[]
+  books                    project_list[]
+  skills                   user_skill[]
+  experiences              experience[]
+  prime                    prime?
+  roles                    user_role[]
+  teams                    user_team[]
+  portfolios               portfolio[]
+  applies                  apply[]
+  inbox                    notify[]                   @relation("receiver")
+  sendedBox                notify[]                   @relation("sender")
+  feedbacks                feedback[]
+  demand_comment           demand_comment[]
+  demand_rejected_designer demand_rejected_designer[]
+  incomes                  user_income[]
+  user_withdraw            user_withdraw[]
+  demand                   demand[]
+  team_members             team_members[]
+
+  @@index([email])
+  @@index([score])
+}
+
+model auth {
+  id       Int     @id @default(autoincrement())
+  provider String
+  email    String?
+  name     String?
+  avatar   String?
+  uid      Int?
+  owner    user?   @relation(fields: [uid], references: [id])
+
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([uid])
+  @@index([email])
+}
+
+model user_coupon {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id    Int
+  coupon_id  Int
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model user_picture {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  project_name  String?   @db.VarChar(255)
+  img_url       String?   @default("") @db.VarChar(255)
+  litpic_url    String?   @db.VarChar(255)
+  from          Int?      @default(0)
+  folder_id     Int?      @default(0)
+  import_status Int?      @default(0)
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @default(now()) @db.Timestamp(0)
+  user          user?     @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
+
+model user_picture_folder {
+  id          Int       @id @default(autoincrement())
+  folder_name String?   @db.VarChar(255)
+  num         Int?      @default(0)
+  user_id     Int?      @default(0)
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model user_picture_share {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  link       String   @db.VarChar(255)
+  folder_id  Int?     @default(0)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model user_role {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  uid        Int
+  rid        Int
+  level      Int      @default(0)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  role       role?    @relation(fields: [rid], references: [id])
+  user       user?    @relation(fields: [uid], references: [id])
+
+  @@index([uid])
+  @@index([rid])
+}
+
+model user_skill {
+  uid        Int      @db.UnsignedInt
+  sid        Int      @db.UnsignedInt
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  user       user?    @relation(fields: [uid], references: [id])
+  skill      skill?   @relation(fields: [sid], references: [id])
+
+  @@unique([uid, sid])
+  @@index([sid])
+}
+
+model user_team {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  uid        Int
+  tid        Int
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  status     Int       @default(1)
+  team       team?     @relation(fields: [tid], references: [id])
+  user       user?     @relation(fields: [uid], references: [id])
+
+  @@index([uid])
+  @@index([tid])
+}
+
+model user_verify_email {
+  id         Int       @id @default(autoincrement())
+  code       String?   @db.VarChar(255)
+  email      String?   @db.VarChar(255)
+  user_id    Int?
+  status     Int?      @default(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model skillTouser {
+  A Int @db.UnsignedInt
+  B Int
+
+  @@unique([A, B], map: "_skillTouser_AB_unique")
+  @@index([B], map: "_skillTouser_B_index")
+  @@map("_skillTouser")
+  @@ignore
+}
+
+model demand {
+  id                       Int                        @id @default(autoincrement())
+  link                     String?                    @db.VarChar(255)
+  user_id                  Int?                       @default(0)
+  share_user_id            Int?                       @default(0)
+  designer_user_id         Int?                       @default(0)
+  from_designer_flag       String?
+  preference_name          String?                    @db.VarChar(255)
+  type                     Int?                       @default(-1)
+  name                     String?                    @db.VarChar(255)
+  size                     Int?                       @default(-1)
+  page                     Int?
+  remark                   String?                    @db.LongText
+  email                    String?                    @db.VarChar(255)
+  contact_number           String?                    @db.VarChar(255)
+  img_list                 String?                    @db.LongText
+  logo_design              String?                    @db.LongText
+  folding                  Int?                       @default(-1)
+  category                 Int?                       @default(-1)
+  services                 Int?                       @default(-1)
+  printing_number          Int?                       @default(-1)
+  printing_page            Int?                       @default(-1)
+  printing_size            Int?                       @default(-1)
+  cover_paper              Int?                       @default(-1)
+  inner_paper              Int?                       @default(-1)
+  staple                   Int?                       @default(-1)
+  finish                   String?                    @db.VarChar(255)
+  picture_id               String?                    @db.VarChar(255)
+  budget_price             Decimal?                   @default(0.00) @db.Decimal(50, 2)
+  order_price              Decimal?                   @default(0.00) @db.Decimal(50, 2)
+  status                   Int?                       @default(0)
+  created_at               DateTime?                  @default(now()) @db.Timestamp(0)
+  updated_at               DateTime?                  @default(now()) @db.Timestamp(0)
+  bussiness_card           String?                    @db.LongText
+  logo_type                Int?                       @default(-1)
+  project_id               Int?
+  quotation                Decimal?                   @default(0.00) @db.Decimal(50, 2)
+  quotation_pdf            String?
+  final_delivery_time      DateTime?                  @db.Timestamp(0)
+  draft_delivery_time      DateTime?                  @db.Timestamp(0)
+  full_delivery_time       String?                    @db.VarChar(255)
+  timeline_status          Int?                       @default(0)
+  user_incomeId            Int?
+  attach_link              String?
+  platform                 Int?
+  level                    Int?
+  suite                    Int?                       @default(-1)
+  discount                 Float?                     @default(0)
+  addition                 String?                    @db.LongText
+  designer_addition        String?                    @db.LongText
+  attachments              attachment[]
+  finished_pictures        finished_picture[]
+  feedbacks                feedback[]
+  project                  project?                   @relation(fields: [project_id], references: [id])
+  demand_comment           demand_comment[]
+  demand_pay               demand_pay[]
+  empfile_list             empfile_list[]
+  demand_rejected_designer demand_rejected_designer[]
+  designer                 user?                      @relation(fields: [designer_user_id], references: [id])
+  user_income              user_income?               @relation(fields: [user_incomeId], references: [id])
+
+  @@index([project_id])
+  @@index([designer_user_id])
+  @@index([user_incomeId])
+}
+
+model attachment {
+  id          Int       @id @default(autoincrement())
+  name        String?
+  link        String
+  description String?
+  demand_id   Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+  type        String    @default("image")
+  cover       String?
+  thumbnail   String?
+  source_from Int?
+  size        Int?
+  demand      demand?   @relation(fields: [demand_id], references: [id])
+
+  @@index([demand_id])
+}
+
+model finished_picture {
+  id         Int       @id @default(autoincrement())
+  thumbnail  String?
+  cover      String
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  demand_id  Int?
+  demand     demand?   @relation(fields: [demand_id], references: [id])
+
+  @@index([demand_id])
+}
+
+model feedback {
+  id         Int       @id @default(autoincrement())
+  score      Int
+  demand_id  Int?
+  user_id    Int?
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  demand     demand?   @relation(fields: [demand_id], references: [id])
+  designer   user?     @relation(fields: [user_id], references: [id])
+
+  @@index([demand_id])
+  @@index([user_id])
+}
+
+model size {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model apply {
+  id         Int       @id @default(autoincrement())
+  uid        Int
+  title      String?   @db.VarChar(255)
+  content    String?   @db.Text
+  type       Int
+  extra      String?   @db.LongText
+  status     Int?      @default(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  from       user?     @relation(fields: [uid], references: [id])
+
+  @@index([uid])
+}
+
+model tag {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?   @db.Text
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+  weight      Int?      @default(0)
+  cht         String?
+  zh          String?
+  prefix      String?
+  picture     picture[]
+
+  @@index([prefix])
+  @@index([name])
+}
+
+model level {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?   @db.Text
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+  picture     picture[]
+}
+
+model demand_comment {
+  id           Int       @id @default(autoincrement())
+  demand_id    Int?      @default(0)
+  designer_id  Int?      @default(0)
+  satisfaction Int?      @default(0)
+  design       Int?
+  speed        Int?
+  carefulness  Int?      @default(0)
+  attitude     Int?      @default(0)
+  content      String?   @db.LongText
+  images       String?   @db.LongText
+  status       Int?      @default(0)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  designer     user?     @relation(fields: [designer_id], references: [id])
+  demand       demand?   @relation(fields: [demand_id], references: [id])
+
+  @@index([demand_id])
+  @@index([designer_id])
+}
+
+model demand_history {
+  id              Int       @id @default(autoincrement())
+  demand_id       Int?
+  preference_name String?   @db.VarChar(255)
+  type            Int?
+  name            String?   @db.VarChar(255)
+  size            Int?
+  page            Int?
+  remark          String?   @db.LongText
+  email           String?   @db.VarChar(255)
+  contact_number  String?   @db.VarChar(255)
+  img_list        String?   @db.LongText
+  logo_design     String?   @db.LongText
+  folding         Int?
+  category        Int?
+  services        Int?
+  printing_number Int?
+  printing_page   Int?
+  printing_size   Int?
+  cover_paper     Int?
+  inner_paper     Int?
+  staple          Int?
+  finish          String?   @db.VarChar(255)
+  picture_id      String?   @db.VarChar(255)
+  budget_price    Decimal?  @db.Decimal(50, 2)
+  order_price     Decimal?  @db.Decimal(50, 2)
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model demand_pay_order {
+  id         Int       @id @default(autoincrement())
+  order_sn   String?   @default("0") @db.VarChar(255)
+  demand_id  Int?      @default(0)
+  pay_price  Decimal?  @default(0.00) @db.Decimal(50, 2)
+  status     Int?      @default(0)
+  pay_data   String?   @db.LongText
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  type       Int?      @default(2)
+}
+
+model user_login_code {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?      @default(0)
+  code       String?   @db.VarChar(255)
+  email      String?   @db.VarChar(255)
+  status     Int?      @default(0)
+  type       String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model demand_after_sales {
+  id         Int       @id @default(autoincrement())
+  demand_id  Int?      @default(0)
+  type       Int?      @default(0)
+  content    String?   @db.LongText
+  img_list   String?   @db.LongText
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model pictureTotag {
+  A Int
+  B Int
+
+  @@unique([A, B], map: "_pictureTotag_AB_unique")
+  @@index([B], map: "_pictureTotag_B_index")
+  @@map("_pictureTotag")
+  @@ignore
+}
+
+model user_invite {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  email      String?   @db.VarChar(255)
+  name       String?   @db.VarChar(255)
+}
+
+model demand_rejected_designer {
+  id         Int       @id @default(autoincrement())
+  demand_id  Int
+  user_id    Int
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  designer   user?     @relation(fields: [user_id], references: [id])
+  demand     demand?   @relation(fields: [demand_id], references: [id])
+
+  @@index([demand_id])
+  @@index([user_id])
+}
+
+model user_withdraw {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int?
+  withdraw_type      Int?      @default(0)
+  bank               String?
+  extra_info         String?
+  collection_account String?   @db.VarChar(255)
+  currency           Int       @default(0)
+  status             Int?      @default(0)
+  amount             Decimal?  @default(0.00) @db.Decimal(50, 2)
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @default(now()) @db.Timestamp(0)
+  balance            Decimal?  @default(0.00) @db.Decimal(50, 2)
+  owner              user?     @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
+
+model user_income {
+  id         Int          @id @default(autoincrement())
+  amount     Decimal?     @default(0.00) @db.Decimal(50, 2)
+  status     Int          @default(0)
+  currency   Int          @default(0)
+  user_id    Int?
+  paied_at   DateTime?
+  created_at DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at DateTime?    @default(now()) @db.Timestamp(0)
+  demand_id  Int?
+  payments   demand_pay[]
+  owner      user?        @relation(fields: [user_id], references: [id])
+  demand     demand[]
+
+  @@index([user_id])
+}
+
+model system_profit {
+  id         Int          @id @default(autoincrement())
+  profit     Decimal?     @default(0.00) @db.Decimal(50, 2)
+  paied_at   DateTime?
+  created_at DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at DateTime?    @default(now()) @db.Timestamp(0)
+  payments   demand_pay[]
+}
+
+model demand_pay {
+  id               Int            @id @default(autoincrement())
+  demand_id        Int?           @default(0)
+  pay_price        Decimal?       @default(0.00) @db.Decimal(50, 2)
+  pay_type         Int?           @default(0)
+  pay_image        String?        @db.LongText
+  invoice_image    String?        @db.LongText
+  created_at       DateTime?      @default(now()) @db.Timestamp(0)
+  updated_at       DateTime?      @default(now()) @db.Timestamp(0)
+  system_profit_id Int?
+  user_income_id   Int?
+  demand           demand?        @relation(fields: [demand_id], references: [id])
+  user_income      user_income?   @relation(fields: [user_income_id], references: [id])
+  system_profit    system_profit? @relation(fields: [system_profit_id], references: [id])
+
+  @@index([demand_id])
+  @@index([user_income_id])
+  @@index([system_profit_id])
+}
+
+model user_message {
+  id              Int       @id @default(autoincrement())
+  user_id         Int
+  user_role       String    @db.VarChar(32)
+  user_avatar     String?   @db.VarChar(255)
+  user_name       String    @db.VarChar(64)
+  project_id      Int
+  message_content String?   @db.Text
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @default(now()) @db.Timestamp(0)
+  file_list       String?   @db.Text
+  read_flag       String?   @default("0") 
+  @@index([project_id])
+}
+
+model teams {
+  id           Int            @id @default(autoincrement()) @db.UnsignedInt
+  name         String         @db.VarChar(32)
+  owner_id     Int
+  created_at   DateTime       @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?      @default(now()) @db.Timestamp(0)
+  team_members team_members[]
+}
+
+model team_members {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id    Int
+  team_id    Int
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  sort       Int
+  teams      teams?    @relation(fields: [team_id], references: [id])
+  user       user?     @relation(fields: [user_id], references: [id])
+}
+
+model demand_designer_quotation {
+  id                        Int          @id @default(autoincrement()) @db.UnsignedInt
+  demand_id                 Int
+  payment_information       String?      @db.Text
+  currency_type             String?      
+  currency_num              Int?         @default(0)
+  designer_service_content  String?      @db.Text
+  payment_type_url          String?      @db.Text
+  payment_flag              String?      
+  payment_finish_url        String?      @db.Text
+  payment_upload_side       String?      
+  created_at                DateTime     @default(now()) @db.Timestamp(0)
+  updated_at                DateTime?    @default(now()) @db.Timestamp(0)
+}

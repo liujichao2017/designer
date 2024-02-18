@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  min-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+:not(.normal-scrollbar)::-webkit-scrollbar {
+  width: 0.4rem;
+}
+
+::-webkit-scrollbar-track {
+  background: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.modal {
+  @apply backdrop-blur-md bg-base-100/10;
+}
+
+.modal-box {
+  @apply bg-base-100/90;
+}
+
+.card.image-full:before {
+  @apply hidden;
+}
+
+.textarea {
+  @apply leading-snug overflow-y-hidden;
+}
+
+.textarea:disabled,
+.input:disabled {
+  @apply cursor-default bg-base-100 border-none;
+}

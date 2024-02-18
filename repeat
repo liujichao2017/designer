@@ -1,0 +1,4 @@
+INSERT INTO `user` (`id`, `name`, `email`, `password`, `avatar`, `status`, `score`, `created_at`, `updated_at`, `login_at`, `profileId`, `primeId`)
+VALUES
+	(177, 'Chow Mei Kuan', 'chowmeikuan.cmk@gmail.com', '7495fa6f06a3733091a7309d66041acf', NULL, 1, 0, '2023-11-13 12:18:24', '2023-11-13 12:18:24', NULL, NULL, NULL);
+

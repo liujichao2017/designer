@@ -1,0 +1,11 @@
+node_modules
+
+/.cache
+/build
+/public/build
+.env
+.env*
+.vscode/
+.DS_Store 
+iochat/node_modules
+cron
